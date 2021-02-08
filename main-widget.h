@@ -2,6 +2,7 @@
 #define MAINWIDGET_H
 
 #include <QWidget>
+#include <QUdpSocket>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWidget; }
@@ -15,8 +16,17 @@ public:
     MainWidget(QWidget *parent = nullptr);
     ~MainWidget();
 
+private slots:
+    void on_ConnectPushButton_clicked();
+    void on_SendPushButton_clicked();
+
+    void on_udp_ready_read();
+
 private:
     Ui::MainWidget *ui;
+    QUdpSocket *udpSocket;
+
+    bool bConnected;
 };
 
 #endif
