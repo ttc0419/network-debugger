@@ -17,10 +17,11 @@ public:
     ~MainWidget();
 
 private slots:
+    void on_udp_ready_read();
+
     void on_ConnectPushButton_clicked();
     void on_SendPushButton_clicked();
-
-    void on_udp_ready_read();
+    void on_ResetCounterPushButton_clicked();
 
 private:
     Ui::MainWidget *ui;

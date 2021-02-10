@@ -21,6 +21,15 @@ MainWidget::~MainWidget()
     delete udpSocket;
 }
 
+void MainWidget::on_udp_ready_read()
+{
+    while(udpSocket->hasPendingDatagrams()) {
+        QNetworkDatagram datagram = udpSocket->receiveDatagram();
+        ui->ReceiveTextBrowser->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + datagram.data());
+        ui->RXValueLabel->setText(QString::number(ui->RXValueLabel->text().toULongLong() + datagram.data().size()));
+    }
+}
+
 void MainWidget::on_ConnectPushButton_clicked()
 {
     if (!bConnected) {
@@ -90,15 +99,15 @@ void MainWidget::on_SendPushButton_clicked()
                 ui->SendTextEdit->toPlainText().size(), addr, port);
             ui->StatusLabel->setText("Status: UDP Message Sent");
         }
+        ui->TXValueLabel->setText(QString::number(ui->TXValueLabel->text().toULongLong() + ui->SendTextEdit->toPlainText().size()));
     } else {
         QMessageBox::warning(this, "Warning", "Remote IPv4 address or the port is not valid!");
     }
 }
 
-void MainWidget::on_udp_ready_read()
+void MainWidget::on_ResetCounterPushButton_clicked()
 {
-    while(udpSocket->hasPendingDatagrams()) {
-        QNetworkDatagram datagram = udpSocket->receiveDatagram();
-        ui->ReceiveTextBrowser->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + datagram.data());
-    }
+    ui->RXValueLabel->setText("0");
+    ui->TXValueLabel->setText("0");
+    ui->StatusLabel->setText("Status: RX and TX Counter Cleared");
 }
