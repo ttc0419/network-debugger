@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>666</width>
-    <height>498</height>
+    <width>685</width>
+    <height>524</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,6 +26,71 @@
       <string>Network Settings</string>
      </property>
      <layout class="QGridLayout" name="NetworkSettingsGridLayout">
+      <item row="4" column="0">
+       <widget class="QLabel" name="RemotePortLabel">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Remote Port: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="RemoteAddressLabel">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Remote Address: </string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
+       <widget class="QPushButton" name="ConnectPushButton">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Connect</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="RemoteAddressLineEdit">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>127.0.0.1</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="RemotePortLineEdit">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>8080</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="0">
        <widget class="QLabel" name="ProtocolLabel">
         <property name="text">
@@ -58,13 +123,6 @@
         </item>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="LocalAddressLabel">
-        <property name="text">
-         <string>Local Address: </string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QLineEdit" name="LocalAddressLineEdit">
         <property name="sizePolicy">
@@ -78,10 +136,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="LocalPortLabel">
+      <item row="1" column="0">
+       <widget class="QLabel" name="LocalAddressLabel">
         <property name="text">
-         <string>Local Port: </string>
+         <string>Local Address: </string>
         </property>
        </widget>
       </item>
@@ -98,69 +156,33 @@
         </property>
        </widget>
       </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="RemoteAddressLabel">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
+      <item row="2" column="0">
+       <widget class="QLabel" name="LocalPortLabel">
         <property name="text">
-         <string>Remote Address: </string>
+         <string>Local Port: </string>
         </property>
        </widget>
       </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="RemoteAddressLineEdit">
+      <item row="5" column="0">
+       <widget class="QLabel" name="ConnectionListLabel">
         <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+         <bool>false</bool>
         </property>
         <property name="text">
-         <string>127.0.0.1</string>
+         <string>Connections: </string>
         </property>
        </widget>
       </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="RemotePortLabel">
+      <item row="5" column="1">
+       <widget class="QComboBox" name="ConnectionListComboBox">
         <property name="enabled">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
-        <property name="text">
-         <string>Remote Port: </string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="RemotePortLineEdit">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>8080</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="0" colspan="2">
-       <widget class="QPushButton" name="ConnectPushButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Connect</string>
-        </property>
+        <item>
+         <property name="text">
+          <string>All Connections</string>
+         </property>
+        </item>
        </widget>
       </item>
      </layout>
