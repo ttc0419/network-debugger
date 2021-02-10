@@ -111,3 +111,9 @@ void MainWidget::on_ResetCounterPushButton_clicked()
     ui->TXValueLabel->setText("0");
     ui->StatusLabel->setText("Status: RX and TX Counter Cleared");
 }
+
+void MainWidget::on_ClearHistoryPushButton_clicked()
+{
+    ui->ReceiveTextBrowser->clear();
+    ui->StatusLabel->setText("Status: History Cleared");
+}
