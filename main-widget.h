@@ -18,11 +18,11 @@ public:
     ~MainWidget();
 
 private slots:
-    void on_tcp_client_error(QAbstractSocket::SocketError socketError);
-    void on_tcp_client_connected();
-    void on_tcp_client_ready_read();
-    void on_tcp_client_disconnected_from_host();
-    void on_udp_ready_read();
+    void on_TcpSocket_errorOccurred(QAbstractSocket::SocketError socketError);
+    void on_TcpSocket_connected();
+    void on_TcpSocket_readyRead();
+    void on_TcpSocket_disconnected();
+    void on_UdpSocket_readyRead();
 
     void on_ConnectPushButton_clicked();
     void on_SendPushButton_clicked();
@@ -32,10 +32,10 @@ private slots:
 
 private:
     Ui::MainWidget *ui;
-    QTcpSocket *tcpSocket;
-    QUdpSocket *udpSocket;
+    QTcpSocket *tcp_sock;
+    QUdpSocket *udp_sock;
 
-    bool bConnected;
+    bool connected;
 };
 
 #endif
