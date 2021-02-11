@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 
+#include "ui_main-widget.h"
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWidget; }
 QT_END_NAMESPACE
@@ -36,6 +38,44 @@ private:
     QUdpSocket *udp_sock;
 
     bool connected;
+
+    inline void setProtocolInputDisabled(bool disable) noexcept
+    {
+        ui->ProtocolLabel->setDisabled(disable);
+        ui->ProtocolComboBox->setDisabled(disable);
+    }
+
+    inline void setLocalInputDisabled(bool disable) noexcept
+    {
+        ui->LocalAddressLabel->setDisabled(disable);
+        ui->LocalAddressLineEdit->setDisabled(disable);
+        ui->LocalPortLabel->setDisabled(disable);
+        ui->LocalPortLineEdit->setDisabled(disable);
+    }
+
+    inline void setLocalInputVisibility(bool visible) noexcept
+    {
+        ui->LocalAddressLabel->setVisible(visible);
+        ui->LocalAddressLineEdit->setVisible(visible);
+        ui->LocalPortLabel->setVisible(visible);
+        ui->LocalPortLineEdit->setVisible(visible);
+    }
+
+    inline void setRemoteInputDisabled(bool disable) noexcept
+    {
+        ui->RemoteAddressLabel->setDisabled(disable);
+        ui->RemoteAddressLineEdit->setDisabled(disable);
+        ui->RemotePortLabel->setDisabled(disable);
+        ui->RemotePortLineEdit->setDisabled(disable);
+    }
+
+    inline void setRemoteInputVisibility(bool visible) noexcept
+    {
+        ui->RemoteAddressLabel->setVisible(visible);
+        ui->RemoteAddressLineEdit->setVisible(visible);
+        ui->RemotePortLabel->setVisible(visible);
+        ui->RemotePortLineEdit->setVisible(visible);
+    }
 };
 
 #endif

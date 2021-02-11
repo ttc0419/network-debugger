@@ -1,5 +1,4 @@
 #include "main-widget.h"
-#include "ui_main-widget.h"
 
 #include <QMessageBox>
 #include <QNetworkDatagram>
@@ -17,10 +16,7 @@ MainWidget::MainWidget(QWidget *parent)
     /* Setup widgets */
     ui->setupUi(this);
     ui->ReceiveSendSplitter->setSizes(QList<int>{350, 60});
-    ui->LocalAddressLabel->hide();
-    ui->LocalAddressLineEdit->hide();
-    ui->LocalPortLabel->hide();
-    ui->LocalPortLineEdit->hide();
+    setLocalInputVisibility(false);
 }
 
 MainWidget::~MainWidget()
@@ -35,12 +31,8 @@ void MainWidget::on_TcpSocket_errorOccurred(QAbstractSocket::SocketError socketE
     tcp_sock->disconnectFromHost();
     tcp_sock->close();
 
-    ui->ProtocolLabel->setDisabled(false);
-    ui->ProtocolComboBox->setDisabled(false);
-    ui->RemoteAddressLabel->setDisabled(false);
-    ui->RemoteAddressLineEdit->setDisabled(false);
-    ui->RemotePortLabel->setDisabled(false);
-    ui->RemotePortLineEdit->setDisabled(false);
+    setProtocolInputDisabled(false);
+    setRemoteInputDisabled(false);
     ui->ConnectPushButton->setText("Connect");
     ui->ConnectPushButton->setDisabled(false);
     ui->SendPushButton->setDisabled(true);
@@ -70,12 +62,8 @@ void MainWidget::on_TcpSocket_disconnected()
 {
     tcp_sock->close();
 
-    ui->ProtocolLabel->setDisabled(false);
-    ui->ProtocolComboBox->setDisabled(false);
-    ui->RemoteAddressLabel->setDisabled(false);
-    ui->RemoteAddressLineEdit->setDisabled(false);
-    ui->RemotePortLabel->setDisabled(false);
-    ui->RemotePortLineEdit->setDisabled(false);
+    setProtocolInputDisabled(false);
+    setRemoteInputDisabled(false);
     ui->ConnectPushButton->setText("Connect");
     ui->ConnectPushButton->setDisabled(false);
     ui->SendPushButton->setDisabled(true);
@@ -106,10 +94,7 @@ void MainWidget::on_ConnectPushButton_clicked()
                 tcp_sock->connectToHost(addr, port);
 
                 /* Update TCP client specific widgets */
-                ui->RemoteAddressLabel->setDisabled(true);
-                ui->RemoteAddressLineEdit->setDisabled(true);
-                ui->RemotePortLabel->setDisabled(true);
-                ui->RemotePortLineEdit->setDisabled(true);
+                setRemoteInputDisabled(true);
                 ui->ConnectPushButton->setDisabled(true);
                 ui->ConnectPushButton->setText("Connecting...");
                 ui->StatusLabel->setText("Status: Connecting to the host...");
@@ -117,14 +102,8 @@ void MainWidget::on_ConnectPushButton_clicked()
                 udp_sock->bind(addr, port);
 
                 /* Update widgets */
-                ui->LocalAddressLabel->setDisabled(true);
-                ui->LocalAddressLineEdit->setDisabled(true);
-                ui->LocalPortLabel->setDisabled(true);
-                ui->LocalPortLineEdit->setDisabled(true);
-                ui->RemoteAddressLabel->setDisabled(false);
-                ui->RemoteAddressLineEdit->setDisabled(false);
-                ui->RemotePortLabel->setDisabled(false);
-                ui->RemotePortLineEdit->setDisabled(false);
+                setLocalInputDisabled(true);
+                setRemoteInputDisabled(false);
                 ui->SendPushButton->setEnabled(true);
                 ui->ConnectPushButton->setText("Disconnect");
                 ui->StatusLabel->setText("Status: UDP Host Connected");
@@ -143,27 +122,15 @@ void MainWidget::on_ConnectPushButton_clicked()
         if (ui->ProtocolComboBox->currentText() == "TCP Client") {
             tcp_sock->disconnectFromHost();
             tcp_sock->close();
-
-            ui->RemoteAddressLabel->setDisabled(false);
-            ui->RemoteAddressLineEdit->setDisabled(false);
-            ui->RemotePortLabel->setDisabled(false);
-            ui->RemotePortLineEdit->setDisabled(false);
+            setRemoteInputDisabled(false);
         } else if (ui->ProtocolComboBox->currentText() == "UDP") {
             udp_sock->close();
-
-            ui->RemoteAddressLabel->setDisabled(true);
-            ui->RemoteAddressLineEdit->setDisabled(true);
-            ui->RemotePortLabel->setDisabled(true);
-            ui->RemotePortLineEdit->setDisabled(true);
+            setRemoteInputDisabled(true);
         }
 
         /* Update Widgets */
-        ui->ProtocolLabel->setDisabled(false);
-        ui->ProtocolComboBox->setDisabled(false);
-        ui->LocalAddressLabel->setDisabled(false);
-        ui->LocalAddressLineEdit->setDisabled(false);
-        ui->LocalPortLabel->setDisabled(false);
-        ui->LocalPortLineEdit->setDisabled(false);
+        setProtocolInputDisabled(false);
+        setLocalInputDisabled(false);
         ui->SendPushButton->setEnabled(false);
         ui->ConnectPushButton->setText("Connect");
         ui->StatusLabel->setText("Status: Disconnected");
@@ -209,28 +176,10 @@ void MainWidget::on_ClearHistoryPushButton_clicked()
 void MainWidget::on_ProtocolComboBox_currentTextChanged(const QString &optString)
 {
     if (optString == "TCP Client") {
-        /* Hide and show widgets */
-        ui->LocalAddressLabel->hide();
-        ui->LocalAddressLineEdit->hide();
-        ui->LocalPortLabel->hide();
-        ui->LocalPortLineEdit->hide();
-
-        /* Enable and disable widgets */
-        ui->RemoteAddressLabel->setDisabled(false);
-        ui->RemoteAddressLineEdit->setDisabled(false);
-        ui->RemotePortLabel->setDisabled(false);
-        ui->RemotePortLineEdit->setDisabled(false);
+        setLocalInputVisibility(false);
+        setRemoteInputDisabled(false);
     } else if (optString == "UDP") {
-        /* Show local network settings again */
-        ui->LocalAddressLabel->show();
-        ui->LocalAddressLineEdit->show();
-        ui->LocalPortLabel->show();
-        ui->LocalPortLineEdit->show();
-
-        /* Enable and disable widgets */
-        ui->RemoteAddressLabel->setDisabled(true);
-        ui->RemoteAddressLineEdit->setDisabled(true);
-        ui->RemotePortLabel->setDisabled(true);
-        ui->RemotePortLineEdit->setDisabled(true);
+        setLocalInputVisibility(true);
+        setRemoteInputDisabled(true);
     }
 }
