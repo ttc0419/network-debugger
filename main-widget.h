@@ -12,6 +12,10 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWidget; }
 QT_END_NAMESPACE
 
+#define PROTO_TCP_CLIENT 0
+#define PROTO_TCP_SERVER 1
+#define PROTO_UDP        2
+
 class MainWidget : public QWidget
 {
     Q_OBJECT
@@ -34,7 +38,7 @@ private slots:
     void on_SendPushButton_clicked();
     void on_ResetCounterPushButton_clicked();
     void on_ClearHistoryPushButton_clicked();
-    void on_ProtocolComboBox_currentTextChanged(const QString &optString);
+    void on_ProtocolComboBox_currentIndexChanged(int index);
     void on_TXLoopCheckBox_toggled(bool checked);
 
 private:

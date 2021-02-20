@@ -129,67 +129,61 @@ void MainWidget::on_ConnectPushButton_clicked()
         QHostAddress addr = QHostAddress(ui->LocalAddressLineEdit->text());
         quint16 port = ui->LocalPortLineEdit->text().toUShort(&bPortValid);
 
-        /* If the address and port are valid, connect to the host or bind the address given */
         if (bPortValid && addr.protocol() == QAbstractSocket::IPv4Protocol) {
-            if (ui->ProtocolComboBox->currentText() == "TCP Client") {
-                tcpSock->connectToHost(addr, port);
-
-                /* Update TCP client specific widgets */
-                setRemoteInputDisabled(true);
-                ui->ConnectPushButton->setDisabled(true);
-                ui->ConnectPushButton->setText("Connecting...");
-                ui->StatusLabel->setText("Status: Connecting to the host...");
-            } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
-                tcpServer->listen(addr, port);
-
-                /* Update TCP server specific widgets */
-                setLocalInputDisabled(true);
-                setConnectionListVisibility(true);
-                setConnectionListDisabled(false);
-                ui->SendPushButton->setEnabled(true);
-                ui->ConnectPushButton->setText("Disconnect");
-                ui->StatusLabel->setText("Status: TCP Server Started");
-
-                bConnected = true;
-            } else if (ui->ProtocolComboBox->currentText() == "UDP") {
-                udpSock->bind(addr, port);
-
-                /* Update UDP specific widgets */
-                setLocalInputDisabled(true);
-                setRemoteInputDisabled(false);
-                ui->SendPushButton->setEnabled(true);
-                ui->ConnectPushButton->setText("Disconnect");
-                ui->StatusLabel->setText("Status: UDP Host Connected");
-
-                bConnected = true;
+            switch (ui->ProtocolComboBox->currentIndex()) {
+                case PROTO_TCP_CLIENT:
+                    tcpSock->connectToHost(addr, port);
+                    setRemoteInputDisabled(true);
+                    ui->ConnectPushButton->setDisabled(true);
+                    ui->ConnectPushButton->setText("Connecting...");
+                    ui->StatusLabel->setText("Status: Connecting to the host...");
+                    break;
+                case PROTO_TCP_SERVER:
+                    tcpServer->listen(addr, port);
+                    setLocalInputDisabled(true);
+                    setConnectionListVisibility(true);
+                    setConnectionListDisabled(false);
+                    ui->SendPushButton->setEnabled(true);
+                    ui->ConnectPushButton->setText("Disconnect");
+                    ui->StatusLabel->setText("Status: TCP Server Started");
+                    bConnected = true;
+                case PROTO_UDP:
+                    udpSock->bind(addr, port);
+                    setLocalInputDisabled(true);
+                    setRemoteInputDisabled(false);
+                    ui->SendPushButton->setEnabled(true);
+                    ui->ConnectPushButton->setText("Disconnect");
+                    ui->StatusLabel->setText("Status: UDP Host Connected");
+                    bConnected = true;
+                    break;
             }
 
-            /* Update common widgets */
             ui->ProtocolLabel->setDisabled(true);
             ui->ProtocolComboBox->setDisabled(true);
-        /* Open a warning message box otherwise */
         } else {
             QMessageBox::warning(this, "Warning", "Local IPv4 address or the port is not valid!");
         }
     } else {
-        if (ui->ProtocolComboBox->currentText() == "TCP Client") {
-            tcpSock->disconnectFromHost();
-            tcpSock->close();
-            setRemoteInputDisabled(false);
-        } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
-            while (clientList.back() != nullptr)
-                clientList.back()->disconnectFromHost();
-
-            tcpServer->close();
-            ui->ConnectionListComboBox->clear();
-            ui->ConnectionListComboBox->addItem("All Connections");
-            setConnectionListDisabled(true);
-        } else if (ui->ProtocolComboBox->currentText() == "UDP") {
-            udpSock->close();
-            setRemoteInputDisabled(true);
+        switch (ui->ProtocolComboBox->currentIndex()) {
+            case PROTO_TCP_CLIENT:
+                tcpSock->disconnectFromHost();
+                tcpSock->close();
+                setRemoteInputDisabled(false);
+                break;
+            case PROTO_TCP_SERVER:
+                while (clientList.back() != nullptr)
+                    clientList.back()->disconnectFromHost();
+                tcpServer->close();
+                ui->ConnectionListComboBox->clear();
+                ui->ConnectionListComboBox->addItem("All Connections");
+                setConnectionListDisabled(true);
+                break;
+            case PROTO_UDP:
+                udpSock->close();
+                setRemoteInputDisabled(true);
+                break;
         }
 
-        /* Update Widgets */
         setProtocolInputDisabled(false);
         setLocalInputDisabled(false);
         ui->SendPushButton->setEnabled(false);
@@ -242,24 +236,31 @@ void MainWidget::on_ClearHistoryPushButton_clicked()
     ui->StatusLabel->setText("Status: History Cleared");
 }
 
-void MainWidget::on_ProtocolComboBox_currentTextChanged(const QString &optString)
+void MainWidget::on_ProtocolComboBox_currentIndexChanged(int index)
 {
-    if (optString == "TCP Client") {
-        setLocalInputVisibility(false);
-        setRemoteInputVisibility(true);
-        setRemoteInputDisabled(false);
-        setConnectionListVisibility(false);
-    } else if (optString == "TCP Server") {
-        setLocalInputVisibility(true);
-        setLocalInputDisabled(false);
-        setRemoteInputVisibility(false);
-        setConnectionListVisibility(true);
-    } else if (optString == "UDP") {
-        setLocalInputVisibility(true);
-        setLocalInputDisabled(false);
-        setRemoteInputVisibility(true);
-        setRemoteInputDisabled(true);
-        setConnectionListVisibility(false);
+    switch (index) {
+        case PROTO_TCP_CLIENT:
+            setLocalInputVisibility(false);
+            setRemoteInputVisibility(true);
+            setRemoteInputDisabled(false);
+            setConnectionListVisibility(false);
+            break;
+        case PROTO_TCP_SERVER:
+            setLocalInputVisibility(true);
+            setLocalInputDisabled(false);
+            setRemoteInputVisibility(false);
+            setConnectionListVisibility(true);
+            break;
+        case PROTO_UDP:
+            setLocalInputVisibility(true);
+            setLocalInputDisabled(false);
+            setRemoteInputVisibility(true);
+            setRemoteInputDisabled(true);
+            setConnectionListVisibility(false);
+            break;
+        default:
+            QMessageBox::warning(this, "Warning", "The protocol is not implemented!");
+            break;
     }
 }
 
@@ -271,21 +272,24 @@ void MainWidget::on_TXLoopCheckBox_toggled(bool checked)
 
 void MainWidget::sendData() noexcept
 {
-    if (ui->ProtocolComboBox->currentText() == "TCP Client") {
-        tcpSock->write(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
-    } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
-        int index = ui->ConnectionListComboBox->currentIndex();
-        if (index == 0) {
-            for (qsizetype i = 1; i < clientList.size(); i++)
-                clientList[i]->write(
+    switch (ui->ProtocolComboBox->currentIndex()) {
+        case PROTO_TCP_CLIENT:
+            tcpSock->write(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
+            break;
+        case PROTO_TCP_SERVER:
+            if (ui->ConnectionListComboBox->currentIndex() == 0) {
+                for (qsizetype i = 1; i < clientList.size(); i++)
+                    clientList[i]->write(
+                        ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
+            } else {
+                clientList[ui->ConnectionListComboBox->currentIndex()]->write(
                     ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
-        } else {
-            clientList[index]->write(
-                ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
-        }
-    } else if (ui->ProtocolComboBox->currentText() == "UDP") {
-        udpSock->writeDatagram(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size(),
-            QHostAddress(ui->RemoteAddressLineEdit->text()), ui->RemotePortLineEdit->text().toUShort());
+            }
+            break;
+        case PROTO_UDP:
+            udpSock->writeDatagram(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size(),
+                QHostAddress(ui->RemoteAddressLineEdit->text()), ui->RemotePortLineEdit->text().toUShort());
+            break;
     }
 
     ui->TXValueLabel->setText(QString::number(ui->TXValueLabel->text().toULongLong() + ui->SendTextEdit->toPlainText().size()));
