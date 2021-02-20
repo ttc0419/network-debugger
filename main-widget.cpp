@@ -263,6 +263,12 @@ void MainWidget::on_ProtocolComboBox_currentTextChanged(const QString &optString
     }
 }
 
+void MainWidget::on_TXLoopCheckBox_toggled(bool checked)
+{
+    ui->TXLoopIntervalLabel->setDisabled(!checked);
+    ui->TXLoopIntervalLineEdit->setDisabled(!checked);
+}
+
 void MainWidget::sendData() noexcept
 {
     if (ui->ProtocolComboBox->currentText() == "TCP Client") {

@@ -35,6 +35,7 @@ private slots:
     void on_ResetCounterPushButton_clicked();
     void on_ClearHistoryPushButton_clicked();
     void on_ProtocolComboBox_currentTextChanged(const QString &optString);
+    void on_TXLoopCheckBox_toggled(bool checked);
 
 private:
     Ui::MainWidget *ui;
