@@ -45,6 +45,8 @@ private:
     bool bConnected;
     QList<QTcpSocket *> clientList;
 
+    void sendData() noexcept;
+
     inline void setProtocolInputDisabled(bool disable) const noexcept
     {
         ui->ProtocolLabel->setDisabled(disable);

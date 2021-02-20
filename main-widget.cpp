@@ -204,26 +204,10 @@ void MainWidget::on_SendPushButton_clicked()
 {
     bool bPortValid;
     QHostAddress addr = QHostAddress(ui->RemoteAddressLineEdit->text());
-    quint16 port = ui->RemotePortLineEdit->text().toUShort(&bPortValid);
+    ui->RemotePortLineEdit->text().toUShort(&bPortValid);
 
     if (bPortValid && addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        if (ui->ProtocolComboBox->currentText() == "TCP Client") {
-            tcpSock->write(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
-        } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
-            int index = ui->ConnectionListComboBox->currentIndex();
-            if (index == 0) {
-                for (qsizetype i = 1; i < clientList.size(); i++)
-                    clientList[i]->write(
-                        ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
-            } else {
-                clientList[index]->write(
-                    ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
-            }
-        } else if (ui->ProtocolComboBox->currentText() == "UDP") {
-            udpSock->writeDatagram((const char *)(ui->SendTextEdit->toPlainText().toUtf8().data()),
-                ui->SendTextEdit->toPlainText().size(), addr, port);
-        }
-
+        sendData();
         ui->StatusLabel->setText("Status: Data Sent");
         ui->TXValueLabel->setText(QString::number(ui->TXValueLabel->text().toULongLong() + ui->SendTextEdit->toPlainText().size()));
     } else {
@@ -262,5 +246,25 @@ void MainWidget::on_ProtocolComboBox_currentTextChanged(const QString &optString
         setRemoteInputVisibility(true);
         setRemoteInputDisabled(true);
         setConnectionListVisibility(false);
+    }
+}
+
+void MainWidget::sendData() noexcept
+{
+    if (ui->ProtocolComboBox->currentText() == "TCP Client") {
+        tcpSock->write(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
+    } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
+        int index = ui->ConnectionListComboBox->currentIndex();
+        if (index == 0) {
+            for (qsizetype i = 1; i < clientList.size(); i++)
+                clientList[i]->write(
+                    ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
+        } else {
+            clientList[index]->write(
+                ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
+        }
+    } else if (ui->ProtocolComboBox->currentText() == "UDP") {
+        udpSock->writeDatagram(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size(),
+            QHostAddress(ui->RemoteAddressLineEdit->text()), ui->RemotePortLineEdit->text().toUShort());
     }
 }
