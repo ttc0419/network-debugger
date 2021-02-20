@@ -6,8 +6,8 @@
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::MainWidget),
-    tcpSock(new QTcpSocket(this)), tcpServer(new QTcpServer(this)),
-    udpSock(new QUdpSocket(this)), bConnected(false), clientList(QList<QTcpSocket *>{nullptr})
+    tcpSock(new QTcpSocket(this)), tcpServer(new QTcpServer(this)), udpSock(new QUdpSocket(this)),
+    bConnected(false), loopTimerId(0), clientList(QList<QTcpSocket *>{nullptr})
 {
     /* Set object names to let QT connect slots automatically in setupUi() below */
     tcpSock->setObjectName("TcpSocket");
@@ -202,16 +202,30 @@ void MainWidget::on_ConnectPushButton_clicked()
 
 void MainWidget::on_SendPushButton_clicked()
 {
-    bool bPortValid;
-    QHostAddress addr = QHostAddress(ui->RemoteAddressLineEdit->text());
-    ui->RemotePortLineEdit->text().toUShort(&bPortValid);
-
-    if (bPortValid && addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        sendData();
-        ui->StatusLabel->setText("Status: Data Sent");
-        ui->TXValueLabel->setText(QString::number(ui->TXValueLabel->text().toULongLong() + ui->SendTextEdit->toPlainText().size()));
+    if (loopTimerId) {
+        killTimer(loopTimerId);
+        loopTimerId = 0;
+        ui->SendPushButton->setText("Send");
+        ui->ConnectPushButton->setDisabled(false);
+        ui->StatusLabel->setText("Status: Loop Sending Stopped");
     } else {
-        QMessageBox::warning(this, "Warning", "Remote IPv4 address or the port is not valid!");
+        bool bPortValid;
+        QHostAddress addr = QHostAddress(ui->RemoteAddressLineEdit->text());
+        ui->RemotePortLineEdit->text().toUShort(&bPortValid);
+
+        if (bPortValid && addr.protocol() == QAbstractSocket::IPv4Protocol) {
+            if (ui->TXLoopCheckBox->isChecked()) {
+                loopTimerId = startTimer(ui->TXLoopIntervalLineEdit->text().toInt(), Qt::TimerType::PreciseTimer);
+                ui->SendPushButton->setText("Stop");
+                ui->ConnectPushButton->setDisabled(true);
+                ui->StatusLabel->setText("Status: Loop Sending Started");
+            } else {
+                sendData();
+                ui->StatusLabel->setText("Status: Data Sent");
+            }
+        } else {
+            QMessageBox::warning(this, "Warning", "Remote IPv4 address or the port is not valid!");
+        }
     }
 }
 
@@ -267,4 +281,6 @@ void MainWidget::sendData() noexcept
         udpSock->writeDatagram(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size(),
             QHostAddress(ui->RemoteAddressLineEdit->text()), ui->RemotePortLineEdit->text().toUShort());
     }
+
+    ui->TXValueLabel->setText(QString::number(ui->TXValueLabel->text().toULongLong() + ui->SendTextEdit->toPlainText().size()));
 }

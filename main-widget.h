@@ -43,9 +43,11 @@ private:
     QUdpSocket *udpSock;
 
     bool bConnected;
+    int loopTimerId;
     QList<QTcpSocket *> clientList;
 
     void sendData() noexcept;
+    inline void timerEvent(QTimerEvent *event) noexcept override { sendData(); };
 
     inline void setProtocolInputDisabled(bool disable) const noexcept
     {
