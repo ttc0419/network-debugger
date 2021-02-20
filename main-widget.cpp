@@ -6,13 +6,13 @@
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), ui(new Ui::MainWidget),
-    tcp_sock(new QTcpSocket(this)), tcp_server(new QTcpServer(this)),
-    udp_sock(new QUdpSocket(this)), connected(false), client_list(QList<QTcpSocket *>{nullptr})
+    tcpSock(new QTcpSocket(this)), tcpServer(new QTcpServer(this)),
+    udpSock(new QUdpSocket(this)), bConnected(false), clientList(QList<QTcpSocket *>{nullptr})
 {
     /* Set object names to let QT connect slots automatically in setupUi() below */
-    tcp_sock->setObjectName("TcpSocket");
-    tcp_server->setObjectName("TcpServer");
-    udp_sock->setObjectName("UdpSocket");
+    tcpSock->setObjectName("TcpSocket");
+    tcpServer->setObjectName("TcpServer");
+    udpSock->setObjectName("UdpSocket");
 
     /* Setup widgets */
     ui->setupUi(this);
@@ -24,15 +24,15 @@ MainWidget::MainWidget(QWidget *parent)
 MainWidget::~MainWidget()
 {
     delete ui;
-    delete tcp_sock;
-    delete tcp_server;
-    delete udp_sock;
+    delete tcpSock;
+    delete tcpServer;
+    delete udpSock;
 }
 
 void MainWidget::on_TcpSocket_errorOccurred(QAbstractSocket::SocketError socketError)
 {
-    tcp_sock->disconnectFromHost();
-    tcp_sock->close();
+    tcpSock->disconnectFromHost();
+    tcpSock->close();
 
     setProtocolInputDisabled(false);
     setRemoteInputDisabled(false);
@@ -41,7 +41,7 @@ void MainWidget::on_TcpSocket_errorOccurred(QAbstractSocket::SocketError socketE
     ui->SendPushButton->setDisabled(true);
     ui->StatusLabel->setText("Status: TCP Connection Failed, Code: " + QString::number(socketError));
 
-    connected = false;
+    bConnected = false;
 }
 
 void MainWidget::on_TcpSocket_connected()
@@ -51,19 +51,19 @@ void MainWidget::on_TcpSocket_connected()
     ui->SendPushButton->setDisabled(false);
     ui->StatusLabel->setText("Status: TCP Host Conected");
 
-    connected = true;
+    bConnected = true;
 }
 
 void MainWidget::on_TcpSocket_readyRead()
 {
-    QByteArray tcpData = tcp_sock->readAll();
+    QByteArray tcpData = tcpSock->readAll();
     ui->ReceiveTextBrowser->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + tcpData.data());
     ui->RXValueLabel->setText(QString::number(ui->RXValueLabel->text().toULongLong() + tcpData.size()));
 }
 
 void MainWidget::on_TcpSocket_disconnected()
 {
-    tcp_sock->close();
+    tcpSock->close();
 
     setProtocolInputDisabled(false);
     setRemoteInputDisabled(false);
@@ -72,18 +72,18 @@ void MainWidget::on_TcpSocket_disconnected()
     ui->SendPushButton->setDisabled(true);
     ui->StatusLabel->setText("Status: TCP Connection Disconnected by the Host");
 
-    connected = false;
+    bConnected = false;
 }
 
 void MainWidget::on_TcpServer_newConnection()
 {
-    while(tcp_server->hasPendingConnections()) {
-        client_list.append(tcp_server->nextPendingConnection());
+    while(tcpServer->hasPendingConnections()) {
+        clientList.append(tcpServer->nextPendingConnection());
 
-        connect(client_list.back(), &QTcpSocket::readyRead, this, &MainWidget::on_TcpServer_client_readyRead);
-        connect(client_list.back(), &QTcpSocket::disconnected, this, &MainWidget::on_TcpServer_client_disconnected);
+        connect(clientList.back(), &QTcpSocket::readyRead, this, &MainWidget::on_TcpServer_client_readyRead);
+        connect(clientList.back(), &QTcpSocket::disconnected, this, &MainWidget::on_TcpServer_client_disconnected);
 
-        QString conn = client_list.back()->peerAddress().toString() + ':' + QString::number(client_list.back()->peerPort());
+        QString conn = clientList.back()->peerAddress().toString() + ':' + QString::number(clientList.back()->peerPort());
         ui->ConnectionListComboBox->addItem(conn);
         ui->StatusLabel->setText("Status: " + conn + " Accepted");
     }
@@ -101,7 +101,7 @@ void MainWidget::on_TcpServer_client_readyRead()
 void MainWidget::on_TcpServer_client_disconnected()
 {
     QTcpSocket *sock = qobject_cast<QTcpSocket *>(QObject::sender());
-    client_list.removeOne(sock);
+    clientList.removeOne(sock);
 
     int i = 0;
     QString conn = sock->peerAddress().toString() + ':' + QString::number(sock->peerPort());
@@ -115,8 +115,8 @@ void MainWidget::on_TcpServer_client_disconnected()
 
 void MainWidget::on_UdpSocket_readyRead()
 {
-    while (udp_sock->hasPendingDatagrams()) {
-        QNetworkDatagram datagram = udp_sock->receiveDatagram();
+    while (udpSock->hasPendingDatagrams()) {
+        QNetworkDatagram datagram = udpSock->receiveDatagram();
         ui->ReceiveTextBrowser->append(QDateTime::currentDateTime().toString("[hh:mm:ss] ") + datagram.data());
         ui->RXValueLabel->setText(QString::number(ui->RXValueLabel->text().toULongLong() + datagram.data().size()));
     }
@@ -124,7 +124,7 @@ void MainWidget::on_UdpSocket_readyRead()
 
 void MainWidget::on_ConnectPushButton_clicked()
 {
-    if (!connected) {
+    if (!bConnected) {
         bool bPortValid;
         QHostAddress addr = QHostAddress(ui->LocalAddressLineEdit->text());
         quint16 port = ui->LocalPortLineEdit->text().toUShort(&bPortValid);
@@ -132,7 +132,7 @@ void MainWidget::on_ConnectPushButton_clicked()
         /* If the address and port are valid, connect to the host or bind the address given */
         if (bPortValid && addr.protocol() == QAbstractSocket::IPv4Protocol) {
             if (ui->ProtocolComboBox->currentText() == "TCP Client") {
-                tcp_sock->connectToHost(addr, port);
+                tcpSock->connectToHost(addr, port);
 
                 /* Update TCP client specific widgets */
                 setRemoteInputDisabled(true);
@@ -140,7 +140,7 @@ void MainWidget::on_ConnectPushButton_clicked()
                 ui->ConnectPushButton->setText("Connecting...");
                 ui->StatusLabel->setText("Status: Connecting to the host...");
             } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
-                tcp_server->listen(addr, port);
+                tcpServer->listen(addr, port);
 
                 /* Update TCP server specific widgets */
                 setLocalInputDisabled(true);
@@ -150,9 +150,9 @@ void MainWidget::on_ConnectPushButton_clicked()
                 ui->ConnectPushButton->setText("Disconnect");
                 ui->StatusLabel->setText("Status: TCP Server Started");
 
-                connected = true;
+                bConnected = true;
             } else if (ui->ProtocolComboBox->currentText() == "UDP") {
-                udp_sock->bind(addr, port);
+                udpSock->bind(addr, port);
 
                 /* Update UDP specific widgets */
                 setLocalInputDisabled(true);
@@ -161,7 +161,7 @@ void MainWidget::on_ConnectPushButton_clicked()
                 ui->ConnectPushButton->setText("Disconnect");
                 ui->StatusLabel->setText("Status: UDP Host Connected");
 
-                connected = true;
+                bConnected = true;
             }
 
             /* Update common widgets */
@@ -173,19 +173,19 @@ void MainWidget::on_ConnectPushButton_clicked()
         }
     } else {
         if (ui->ProtocolComboBox->currentText() == "TCP Client") {
-            tcp_sock->disconnectFromHost();
-            tcp_sock->close();
+            tcpSock->disconnectFromHost();
+            tcpSock->close();
             setRemoteInputDisabled(false);
         } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
-            while (client_list.back() != nullptr)
-                client_list.back()->disconnectFromHost();
+            while (clientList.back() != nullptr)
+                clientList.back()->disconnectFromHost();
 
-            tcp_server->close();
+            tcpServer->close();
             ui->ConnectionListComboBox->clear();
             ui->ConnectionListComboBox->addItem("All Connections");
             setConnectionListDisabled(true);
         } else if (ui->ProtocolComboBox->currentText() == "UDP") {
-            udp_sock->close();
+            udpSock->close();
             setRemoteInputDisabled(true);
         }
 
@@ -196,7 +196,7 @@ void MainWidget::on_ConnectPushButton_clicked()
         ui->ConnectPushButton->setText("Connect");
         ui->StatusLabel->setText("Status: Disconnected");
 
-        connected = false;
+        bConnected = false;
     }
 }
 
@@ -208,19 +208,19 @@ void MainWidget::on_SendPushButton_clicked()
 
     if (bPortValid && addr.protocol() == QAbstractSocket::IPv4Protocol) {
         if (ui->ProtocolComboBox->currentText() == "TCP Client") {
-            tcp_sock->write(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
+            tcpSock->write(ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
         } else if (ui->ProtocolComboBox->currentText() == "TCP Server") {
             int index = ui->ConnectionListComboBox->currentIndex();
             if (index == 0) {
-                for (qsizetype i = 1; i < client_list.size(); i++)
-                    client_list[i]->write(
+                for (qsizetype i = 1; i < clientList.size(); i++)
+                    clientList[i]->write(
                         ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
             } else {
-                client_list[index]->write(
+                clientList[index]->write(
                     ui->SendTextEdit->toPlainText().toUtf8().data(), ui->SendTextEdit->toPlainText().size());
             }
         } else if (ui->ProtocolComboBox->currentText() == "UDP") {
-            udp_sock->writeDatagram((const char *)(ui->SendTextEdit->toPlainText().toUtf8().data()),
+            udpSock->writeDatagram((const char *)(ui->SendTextEdit->toPlainText().toUtf8().data()),
                 ui->SendTextEdit->toPlainText().size(), addr, port);
         }
 

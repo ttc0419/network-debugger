@@ -38,12 +38,12 @@ private slots:
 
 private:
     Ui::MainWidget *ui;
-    QTcpSocket *tcp_sock;
-    QTcpServer *tcp_server;
-    QUdpSocket *udp_sock;
+    QTcpSocket *tcpSock;
+    QTcpServer *tcpServer;
+    QUdpSocket *udpSock;
 
-    bool connected;
-    QList<QTcpSocket *> client_list;
+    bool bConnected;
+    QList<QTcpSocket *> clientList;
 
     inline void setProtocolInputDisabled(bool disable) const noexcept
     {
